@@ -1,0 +1,17 @@
+# node
+node_modules
+
+# expo
+.expo
+.expo-shared
+
+# env
+.env
+
+# build
+dist
+build
+
+# misc
+*.log
+.vscode

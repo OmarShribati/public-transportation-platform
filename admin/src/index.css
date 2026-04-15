@@ -1,0 +1,287 @@
+@import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo+Play:wght@200..1000&family=Edu+SA+Hand:wght@400..700&family=Frank+Ruhl+Libre:wght@300..900&family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Noto+Kufi+Arabic:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Reem+Kufi:wght@400..700&family=Rubik:ital,wght@0,300..900;1,300..900&family=Shippori+Mincho&display=swap');
+@import "tailwindcss";
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+* {
+  font-family: "Almarai", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+}
+
+
+::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #34709D;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #4d7391;
+}
+
+:root {
+
+  /* ------------------- الألوان الأساسية للخلفية والنص ------------------- */
+  
+  /* خلفية التطبيق الرئيسية: أسود داكن جداً لراحة العين */
+  --color-main-bg: #121212; 
+  /* خلفية الشريط الجانبي (Sidebar) والقوائم المنسدلة */
+  --color-sidebar-bg: #1F1F1F; 
+  /* حدود الشريط الجانبي (يمكن استخدام لون مميز) */
+  --color-sidebar-border: #00BCD4; 
+
+
+  /* خلفية شريط التنقل العلوي */
+  --color-nav-bg: #1F1F1F; 
+  /* لون أزرار شريط التنقل - لون مميز */
+  --color-nav-button: #00BCD4; 
+
+
+  /* لون النص الرئيسي: أبيض فاتح */
+  --color-text-main: #E0E0E0; 
+  /* لون النص المميز (العناوين أو الحالات النشطة): أزرق فيروزي ساطع */
+  --color-text-highlight: #00BCD4; 
+
+
+  /* لون الأيقونات عند المرور فوقها (Hover) - لون جذاب ومميز */
+  --color-icon-hover: #4CAF50; /* أخضر نيون */
+
+
+  /* ---------------------- ألوان الجداول ---------------------- */
+
+  /* خلفية الجداول: لون داكن قليلاً لتباين أفضل */
+  --color-table-bg: #212121; 
+  /* خلفية رأس الجدول */
+  --color-table-header: #333333; 
+  /* لون الحدود الفاصلة */
+  --color-border: #444444; 
+
+
+  /* ---------------------- ألوان الأزرار ---------------------- */
+
+  /* زر التعديل (Edit): أخضر نيون */
+  --color-Edit-Button: #4CAF50; 
+  /* زر الحذف (Delete): أحمر داكن */
+  --color-Delete-Button: #D32F2F; 
+  /* زر التفاصيل (Details): أزرق فاتح */
+  --color-Details-Button: #03A9F4; 
+  /* زر الإضافة (Add): أخضر */
+  --color-Add-Button: #4CAF50; 
+
+
+  /* ------------------ ألوان الشريط الجانبي (Sidebar) ------------------ */
+
+  /* خلفية العنصر العادي في الشريط الجانبي */
+  --sidebar-item-bg: #2C2C2C; 
+  /* خلفية العنصر عند المرور فوقه (Hover) */
+  --sidebar-item-hover: #3A3A3A;
+
+  /* نص العنصر العادي */
+  --sidebar-text: #E0E0E0; 
+  /* نص العنصر عند المرور فوقه (Hover) - أزرق فيروزي */
+  --sidebar-text-hover: #00BCD4;
+
+  /* أيقونة العنصر العادي */
+  --sidebar-icon: #BDBDBD;
+  /* أيقونة العنصر عند المرور فوقه (Hover) - لون مميز */
+  --sidebar-icon-hover: #FF5252; /* أحمر ساطع */
+
+
+  /* خلفية العنصر النشط: تدرج لوني أزرق غامق لمزيد من التميز */
+  --sidebar-active-bg: linear-gradient(to top, #00BCD4, #00838F); 
+  /* نص العنصر النشط */
+  --sidebar-active-text: #FFFFFF;
+}
+
+
+@layer utilities {
+
+  .bg-mainBg {
+    background-color: var(--color-main-bg);
+  }
+
+  .bg-sidebarBg {
+    background-color: var(--color-sidebar-bg);
+  }
+
+  .bg-navBg {
+    background-color: var(--color-nav-bg);
+  }
+
+  .bg-navButton {
+    background-color: var(--color-nav-button);
+  }
+
+  .bg-tableBg {
+    background-color: var(--color-table-bg);
+  }
+
+  .bg-tableHeader {
+    background-color: var(--color-table-header);
+  }
+
+  .bg-sidebarItem {
+    background-color: var(--sidebar-item-bg);
+  }
+
+  .bg-sidebarItemHover {
+    background-color: var(--sidebar-item-hover);
+  }
+
+  .bg-editButton {
+    background-color: var(--color-Edit-Button);
+  }
+
+  .bg-deleteButton {
+    background-color: var(--color-Delete-Button);
+  }
+
+  .bg-detailsButton {
+    background-color: var(--color-Details-Button);
+  }
+
+  .bg-addButton {
+    background-color: var(--color-Add-Button);
+  }
+
+  .sidebar-active-bg {
+    background: var(--sidebar-active-bg);
+  }
+
+
+  .text-main {
+    color: var(--color-text-main);
+  }
+
+  .text-highlight {
+    color: var(--color-text-highlight);
+  }
+
+  .text-sidebar-text {
+    color: var(--sidebar-text);
+  }
+
+  .text-sidebar-hover {
+    color: var(--sidebar-text-hover);
+  }
+
+  .text-sidebar-active {
+    color: var(--sidebar-active-text);
+  }
+
+
+  .icon-hover {
+    color: var(--color-icon-hover);
+  }
+
+  .sidebar-icon {
+    color: var(--sidebar-icon);
+  }
+
+  .sidebar-icon-hover {
+    color: var(--sidebar-icon-hover);
+  }
+
+
+  .border-sidebar {
+    border-color: var(--color-sidebar-border);
+  }
+
+  .border-table {
+    border-color: var(--color-border);
+  }
+
+}
+
+
+.checkbox-wrapper-35 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.checkbox-wrapper-35 .switch {
+  display: none;
+}
+
+.checkbox-wrapper-35 .switch+label {
+  align-items: center;
+  color: var(--color-text-main, #fff);
+  cursor: pointer;
+  display: flex;
+  font-size: 13px;
+  position: relative;
+  user-select: none;
+  gap: 8px;
+}
+
+
+.checkbox-wrapper-35 .switch+label::before {
+  content: "";
+  background-color: var(--color-nav-bg, #222);
+  border-radius: 50px;
+  height: 18px;
+  width: 32px;
+  transition: background-color 0.15s ease-out;
+}
+
+
+.checkbox-wrapper-35 .switch+label::after {
+  content: "";
+  background-color: #fff;
+  border-radius: 50%;
+  height: 14px;
+  width: 14px;
+  position: absolute;
+  top: 2px;
+  transition: transform 0.15s ease-out;
+}
+
+
+html[dir="rtl"] .checkbox-wrapper-35 .switch+label::after {
+  left: 2px;
+}
+
+
+html[dir="ltr"] .checkbox-wrapper-35 .switch+label::after {
+  left: 2px;
+}
+
+
+.checkbox-wrapper-35 .switch:checked+label::before {
+  background-color: #ffb500;
+}
+
+
+html[dir="rtl"] .checkbox-wrapper-35 .switch:checked+label::after {
+  transform: translateX(14px);
+}
+
+html[dir="ltr"] .checkbox-wrapper-35 .switch:checked+label::after {
+  transform: translateX(14px);
+}
+
+
+.switch-x-text {
+  font-weight: bold;
+  font-size: 14px;
+  color: var(--color-text-main);
+}
