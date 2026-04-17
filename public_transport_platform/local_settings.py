@@ -1,5 +1,0 @@
-MYSQL_DATABASE = 'public_transport_db'
-MYSQL_USER = 'transport_user'
-MYSQL_PASSWORD = '12345678'
-MYSQL_HOST = '127.0.0.1'
-MYSQL_PORT = '3306'
