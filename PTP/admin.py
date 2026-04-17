@@ -1,6 +1,6 @@
 from django.contrib import admin
 from PTP.models.user import User
-from PTP.models import Driver, Route, Vehicle
+from PTP.models import Driver, Route, Stop, Vehicle
 
 
 @admin.register(User)
@@ -32,3 +32,11 @@ class RouteAdmin(admin.ModelAdmin):
     list_display = ('route_name', 'created_at')
     search_fields = ('route_name',)
     ordering = ('route_name',)
+
+
+@admin.register(Stop)
+class StopAdmin(admin.ModelAdmin):
+    list_display = ('name', 'latitude', 'longitude', 'is_active', 'created_at', 'updated_at')
+    list_filter = ('is_active', 'created_at', 'updated_at')
+    search_fields = ('name',)
+    ordering = ('name',)

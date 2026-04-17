@@ -86,6 +86,7 @@ Ignored local-only/generated directories include `venv/`, `media/`, `__pycache__
 - `Driver`: driver account model with approval status, account status, license image, vehicle assignment, and deactivation request fields.
 - `DriverToken`: authentication token linked one-to-one with a driver.
 - `Route`: transit route record.
+- `Stop`: real-world bus stop location stored as latitude and longitude coordinates.
 - `Vehicle`: vehicle record linked optionally to a route.
 
 ## API Routes
@@ -117,6 +118,10 @@ PATCH /api/accounts/admin/accounts/<account_type>/<account_id>
 POST  /api/accounts/admin/accounts/<account_type>/<account_id>/<action>
 POST  /api/accounts/admin/drivers/<driver_id>/<action>
 GET   /api/accounts/admin/driver-requests
+GET   /api/accounts/admin/stops
+POST  /api/accounts/admin/stops
+PATCH /api/accounts/admin/stops/<stop_id>
+DELETE /api/accounts/admin/stops/<stop_id>
 
 GET   /api/accounts/users
 ```

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from PTP.models import Driver, Route, User, Vehicle
+from PTP.models import Driver, Route, Stop, User, Vehicle
 
 
 class AdminAccountCreateSerializer(serializers.Serializer):
@@ -124,4 +124,31 @@ class AdminAccountUpdateSerializer(serializers.Serializer):
             driver_only_fields = ['approval_status', 'vehicle_id']
             for field in driver_only_fields:
                 attrs.pop(field, None)
+        return attrs
+
+
+class AdminStopSerializer(serializers.ModelSerializer):
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6, min_value=-90, max_value=90)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6, min_value=-180, max_value=180)
+
+    class Meta:
+        model = Stop
+        fields = ['stop_id', 'name', 'latitude', 'longitude', 'is_active', 'created_at', 'updated_at']
+        read_only_fields = ['stop_id', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        latitude = attrs.get('latitude', getattr(self.instance, 'latitude', None))
+        longitude = attrs.get('longitude', getattr(self.instance, 'longitude', None))
+
+        if latitude is None or longitude is None:
+            return attrs
+
+        duplicate_stops = Stop.objects.filter(latitude=latitude, longitude=longitude)
+        if self.instance is not None:
+            duplicate_stops = duplicate_stops.exclude(pk=self.instance.pk)
+        if duplicate_stops.exists():
+            raise serializers.ValidationError({
+                'coordinates': 'A stop with these coordinates already exists.'
+            })
+
         return attrs

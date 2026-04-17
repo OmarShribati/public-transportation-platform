@@ -5,6 +5,7 @@ from .admin_views import (
     AdminDriverRequestsView,
     AdminDriverApprovalView,
 )
+from .admin_stop_views import AdminStopDetailView, AdminStopsView
 from .auth_views import LoginView, RegistrationView
 from .driver_views import DriverDeactivateRequestView, DriverProfileView
 from .logout_views import LogoutView
@@ -16,6 +17,8 @@ __all__ = [
     'AdminAccountsView',
     'AdminDriverRequestsView',
     'AdminDriverApprovalView',
+    'AdminStopDetailView',
+    'AdminStopsView',
     'DriverProfileView',
     'DriverDeactivateRequestView',
     'LoginView',

@@ -6,6 +6,8 @@ from PTP.views import (
     AdminAccountsView,
     AdminDriverApprovalView,
     AdminDriverRequestsView,
+    AdminStopDetailView,
+    AdminStopsView,
     DriverDeactivateRequestView,
     DriverProfileView,
     LoginView,
@@ -28,5 +30,7 @@ urlpatterns = [
     path('admin/accounts/<str:account_type>/<int:account_id>/<str:action>', AdminAccountStatusView.as_view(), name='admin-account-status'),
     path('admin/drivers/<int:driver_id>/<str:action>', AdminDriverApprovalView.as_view(), name='admin-driver-approval'),
     path('admin/driver-requests', AdminDriverRequestsView.as_view(), name='admin-driver-requests'),
+    path('admin/stops', AdminStopsView.as_view(), name='admin-stops'),
+    path('admin/stops/<int:stop_id>', AdminStopDetailView.as_view(), name='admin-stop-detail'),
     path('users', AdminAccountsView.as_view(), name='admin-users'),
 ]
