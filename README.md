@@ -1,163 +1,203 @@
 # Public Transportation Platform
 
-A Django-based backend for a public transportation system with layered architecture and component-based design.
+Django REST Framework backend for a public transportation platform. The current codebase focuses on account management for passengers, drivers, and administrators, with support for driver approval, profiles, deactivation requests, vehicles, and routes.
 
-## Project Structure
+## Team Members
 
-```
-public_transport_platform/
-├── public_transport_platform/          # Main Django project
+- Omar Shribati
+- Adnan Alashram
+- Shahed Alzoni
+
+## Tech Stack
+
+- Python 3.8+
+- Django 4.2.7
+- Django REST Framework 3.14.0
+- MySQL via `mysqlclient`
+
+## Current Project Structure
+
+```text
+Public_Transportation_PLATFORM/
+├── manage.py
+├── requirements.txt
+├── validate_setup.py
+├── README.md
+├── LICENSE
+├── p_transportation_p/
 │   ├── __init__.py
-│   ├── settings.py                     # Django settings with MySQL config
-│   ├── urls.py                         # Main URL configuration
-│   ├── wsgi.py                         # WSGI configuration
-│   └── asgi.py                         # ASGI configuration
-├── apps/                              # Apps directory containing all system components
-│   ├── __init__.py
-│   └── account_management/            # Account management component
-│       ├── __init__.py
-│       ├── admin.py                   # Django admin configuration
-│       ├── apps.py                    # Django app configuration
-│       ├── forms.py                   # Django forms
-│       ├── urls.py                    # App URL configuration
-│       ├── models/                    # Models package
-│       │   ├── __init__.py
-│       │   ├── user.py                # User model
-│       │   └── user_manager.py        # User manager
-│       ├── views/                     # Views package
-│       │   ├── __init__.py
-│       │   └── registration_view.py   # Registration API view
-│       ├── serializers/               # Serializers package
-│       │   ├── __init__.py
-│       │   └── user_serializers.py    # User serializers
-│       ├── services/                  # Services package
-│       │   ├── __init__.py
-│       │   └── account_service.py     # Account business logic
-│       └── tests/                     # Tests package
-│           ├── __init__.py
-│           └── test_registration.py   # Registration tests
-├── static/                            # Static files
-├── templates/                         # Templates
-├── media/                             # Media files
-├── manage.py                          # Django management script
-└── requirements.txt                   # Python dependencies
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+└── PTP/
+    ├── __init__.py
+    ├── admin.py
+    ├── apps.py
+    ├── urls.py
+    ├── migrations/
+    │   └── ...
+    ├── models/
+    │   ├── __init__.py
+    │   ├── user.py
+    │   ├── user_manager.py
+    │   ├── driver.py
+    │   ├── driver_token.py
+    │   ├── route.py
+    │   └── vehicle.py
+    ├── serializers/
+    │   ├── __init__.py
+    │   ├── admin_serializers.py
+    │   ├── auth_serializers.py
+    │   ├── profile_serializers.py
+    │   ├── registration_serializers.py
+    │   └── user_serializers.py
+    ├── services/
+    │   ├── __init__.py
+    │   └── account_service.py
+    └── views/
+        ├── __init__.py
+        ├── admin_account_views.py
+        ├── admin_driver_views.py
+        ├── admin_views.py
+        ├── auth_views.py
+        ├── driver_views.py
+        ├── logout_views.py
+        ├── passenger_views.py
+        └── registration_view.py
 ```
 
 ## Architecture
 
-- **Layered Architecture**: Views → Services → Models
-- **Component-based**: Each component (account_management) is self-contained with its own layers
-- **Package Structure**: Each layer is organized as a Python package with individual files per class
-- **Separation of Concerns**: Clear separation between presentation, business logic, and data access
-- **Direct Model Access**: Services interact directly with Django models without repository abstraction layer
-- **Modular Apps**: All system components are organized under `apps/` directory for better organization
+The project is a single Django project with one main app, `PTP`.
 
-## Architecture Notes
+- `p_transportation_p/` contains the Django project configuration, global URL routing, ASGI, and WSGI entry points.
+- `PTP/models/` contains database models for users, drivers, driver tokens, routes, and vehicles.
+- `PTP/serializers/` contains request validation and response serialization logic.
+- `PTP/views/` contains API views for authentication, profiles, admin account management, and driver approval workflows.
+- `PTP/services/` contains business logic that should stay outside views when possible.
+- `PTP/migrations/` contains Django database migrations and should be committed to version control.
 
-### Current Architecture: Monolithic with Modular Components ✅
-**ما لدينا الآن هو الأفضل لمشروعك:**
+Ignored local-only/generated directories include `venv/`, `media/`, `__pycache__/`, database dumps, and `p_transportation_p/local_settings.py`.
 
-- ✅ **هيكل منظم**: جميع المكونات في مجلد `apps/` للتنظيم الأفضل
-- ✅ **معمارية طبقية**: Views → Services → Models
-- ✅ **قاعدة بيانات مشتركة**: سهولة في الاستعلامات والعلاقات
-- ✅ **نشر بسيط**: مشروع Django واحد
-- ✅ **سهولة التطوير**: لا تعقيد في التواصل بين الخدمات
+## Main Models
 
-### Microservices Architecture (نهج مختلف) 🔄
-**ليس ما نطبقه الآن:**
+- `User`: custom passenger/admin user model with email login, full name, phone, status, and admin flag.
+- `Driver`: driver account model with approval status, account status, license image, vehicle assignment, and deactivation request fields.
+- `DriverToken`: authentication token linked one-to-one with a driver.
+- `Route`: transit route record.
+- `Vehicle`: vehicle record linked optionally to a route.
 
-- 🔄 **خدمات منفصلة**: كل مكون خدمة مستقلة مع قاعدة بيانات منفصلة
-- 🔄 **API منفصلة**: كل خدمة لها API خاص بها
-- 🔄 **نشر مستقل**: كل خدمة تنشر بشكل منفصل
-- 🔄 **تعقيد أكبر**: إدارة التواصل بين الخدمات، distributed transactions
-- 🔄 **مناسب للمشاريع الكبيرة**: فرق تطوير منفصلة لكل خدمة
+## API Routes
 
-### لماذا مجلد `apps/`؟
-- 📁 **تنظيم أفضل**: جميع مكونات النظام في مكان واحد
-- 📁 **سهولة الإضافة**: إضافة مكونات جديدة (route_management, vehicle_management, etc.)
-- 📁 **معيار Django**: متبع في مشاريع Django الكبيرة
-- 📁 **فصل منطقي**: كل مكون له هيكله الخاص
+All app endpoints are mounted under:
 
-**الخلاصة**: الهيكل الحالي مثالي لمتطلبات مشروعك! 🎯
+```text
+/api/accounts/
+```
+
+Available routes:
+
+```text
+POST  /api/accounts/register
+POST  /api/accounts/login
+POST  /api/accounts/logout
+
+GET   /api/accounts/passenger/profile
+PATCH /api/accounts/passenger/profile
+POST  /api/accounts/passenger/deactivate
+
+GET   /api/accounts/driver/profile
+PATCH /api/accounts/driver/profile
+POST  /api/accounts/driver/deactivation-request
+
+GET   /api/accounts/admin/accounts
+POST  /api/accounts/admin/accounts
+PATCH /api/accounts/admin/accounts/<account_type>/<account_id>
+POST  /api/accounts/admin/accounts/<account_type>/<account_id>/<action>
+POST  /api/accounts/admin/drivers/<driver_id>/<action>
+GET   /api/accounts/admin/driver-requests
+
+GET   /api/accounts/users
+```
+
+Django admin is available at:
+
+```text
+/admin/
+```
 
 ## Setup
 
-1. **Install Dependencies**:
+1. Create and activate a virtual environment:
+
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate
+   ```
+
+2. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **Configure MySQL Database**:
-   Update `public_transport_platform/settings.py` with your MySQL credentials:
-   ```python
-   DATABASES = {
-       'default': {
-           'ENGINE': 'django.db.backends.mysql',
-           'NAME': 'public_transport_db',
-           'USER': 'your_mysql_username',
-           'PASSWORD': 'your_mysql_password',
-           'HOST': 'localhost',
-           'PORT': '3306',
-       }
-   }
+3. Configure MySQL settings.
+
+   You can use environment variables:
+
+   ```bash
+   set MYSQL_DATABASE=public_transport_db
+   set MYSQL_USER=transport_user
+   set MYSQL_PASSWORD=your_mysql_password
+   set MYSQL_HOST=127.0.0.1
+   set MYSQL_PORT=3306
    ```
 
-3. **Run Migrations**:
+   Or create a local-only file named `p_transportation_p/local_settings.py`:
+
+   ```python
+   MYSQL_DATABASE = 'public_transport_db'
+   MYSQL_USER = 'transport_user'
+   MYSQL_PASSWORD = 'your_mysql_password'
+   MYSQL_HOST = '127.0.0.1'
+   MYSQL_PORT = '3306'
+   ```
+
+4. Apply migrations:
+
    ```bash
-   python manage.py makemigrations
    python manage.py migrate
    ```
 
-4. **Create Superuser**:
+5. Create an admin user if needed:
+
    ```bash
    python manage.py createsuperuser
    ```
 
-5. **Run Tests**:
-   ```bash
-   python manage.py test
-   ```
+6. Run the development server:
 
-6. **Run Development Server**:
    ```bash
    python manage.py runserver
    ```
 
-## API Endpoints
+## Validation
 
-### Account Management
-- `POST /api/accounts/register/` - Register new user (passenger or driver)
+Run Django checks:
 
-## Database Schema
-
-### CustomUser Table
-- `email` (EmailField, unique)
-- `full_name` (CharField)
-- `phone` (CharField)
-- `is_driver` (BooleanField)
-- `is_passenger` (BooleanField)
-- `is_admin` (BooleanField)
-- `account_status` (CharField)
-- `created_at` (DateTimeField)
-
-## Development
-
-- **Python Version**: 3.8+
-- **Django Version**: 4.2.7
-- **Database**: MySQL
-- **API Framework**: Django REST Framework
-
-## Testing
-
-Run tests with:
 ```bash
-python manage.py test account_management
+python manage.py check
 ```
 
-## Deployment
+Run the setup validation script:
 
-1. Set `DEBUG = False` in settings.py
-2. Configure production database settings
-3. Set up static files serving
-4. Configure allowed hosts
-5. Use a production WSGI server (gunicorn, uwsgi)
+```bash
+python validate_setup.py
+```
+
+## Notes
+
+- Uploaded media files are stored under `media/` locally and are not committed to Git.
+- `p_transportation_p/local_settings.py` is intentionally ignored because it can contain local database credentials.
+- The current codebase does not use an `apps/account_management/` directory; the active Django app is `PTP`.
