@@ -1,6 +1,6 @@
 from django.contrib import admin
 from PTP.models.user import User
-from PTP.models import Driver, Route, Stop, Vehicle
+from PTP.models import Driver, DriverTrip, Route, RouteStop, Stop, Vehicle, VehicleLocation
 
 
 @admin.register(User)
@@ -29,7 +29,8 @@ class VehicleAdmin(admin.ModelAdmin):
 
 @admin.register(Route)
 class RouteAdmin(admin.ModelAdmin):
-    list_display = ('route_name', 'created_at')
+    list_display = ('route_name', 'price', 'is_active', 'created_at', 'updated_at')
+    list_filter = ('is_active', 'created_at', 'updated_at')
     search_fields = ('route_name',)
     ordering = ('route_name',)
 
@@ -40,3 +41,27 @@ class StopAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'created_at', 'updated_at')
     search_fields = ('name',)
     ordering = ('name',)
+
+
+@admin.register(RouteStop)
+class RouteStopAdmin(admin.ModelAdmin):
+    list_display = ('route', 'stop', 'stop_order', 'created_at')
+    list_filter = ('route', 'created_at')
+    search_fields = ('route__route_name', 'stop__name')
+    ordering = ('route', 'stop_order')
+
+
+@admin.register(DriverTrip)
+class DriverTripAdmin(admin.ModelAdmin):
+    list_display = ('trip_id', 'driver', 'vehicle', 'route', 'status', 'started_at', 'ended_at')
+    list_filter = ('status', 'route', 'started_at', 'ended_at')
+    search_fields = ('driver__email', 'driver__full_name', 'vehicle__vehicle_number', 'route__route_name')
+    ordering = ('-started_at',)
+
+
+@admin.register(VehicleLocation)
+class VehicleLocationAdmin(admin.ModelAdmin):
+    list_display = ('location_id', 'trip', 'driver', 'vehicle', 'latitude', 'longitude', 'speed_kmh', 'heading', 'distance_to_route_meters', 'is_off_route', 'recorded_at')
+    list_filter = ('vehicle', 'driver', 'is_off_route', 'recorded_at')
+    search_fields = ('driver__email', 'driver__full_name', 'vehicle__vehicle_number')
+    ordering = ('-recorded_at',)

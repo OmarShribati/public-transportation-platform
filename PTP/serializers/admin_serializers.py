@@ -1,6 +1,8 @@
+from django.db import transaction
 from rest_framework import serializers
 
-from PTP.models import Driver, Route, Stop, User, Vehicle
+from PTP.models import Driver, Route, RouteStop, Stop, User, Vehicle
+from PTP.services import RoutePathService, RoutePathServiceError
 
 
 class AdminAccountCreateSerializer(serializers.Serializer):
@@ -152,3 +154,140 @@ class AdminStopSerializer(serializers.ModelSerializer):
             })
 
         return attrs
+
+
+class AdminRouteSerializer(serializers.ModelSerializer):
+    start_latitude = serializers.DecimalField(max_digits=9, decimal_places=6, min_value=-90, max_value=90)
+    start_longitude = serializers.DecimalField(max_digits=9, decimal_places=6, min_value=-180, max_value=180)
+    end_latitude = serializers.DecimalField(max_digits=9, decimal_places=6, min_value=-90, max_value=90)
+    end_longitude = serializers.DecimalField(max_digits=9, decimal_places=6, min_value=-180, max_value=180)
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)
+    stop_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=True,
+        allow_empty=False,
+    )
+    stops = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Route
+        fields = [
+            'route_id',
+            'route_name',
+            'start_latitude',
+            'start_longitude',
+            'end_latitude',
+            'end_longitude',
+            'price',
+            'path',
+            'is_active',
+            'stop_ids',
+            'stops',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['route_id', 'path', 'stops', 'created_at', 'updated_at']
+
+    def get_stops(self, route):
+        route_stops = route.route_stops.select_related('stop').order_by('stop_order')
+        return [
+            {
+                'stop_id': route_stop.stop.stop_id,
+                'name': route_stop.stop.name,
+                'latitude': str(route_stop.stop.latitude),
+                'longitude': str(route_stop.stop.longitude),
+                'is_active': route_stop.stop.is_active,
+                'order': route_stop.stop_order,
+            }
+            for route_stop in route_stops
+        ]
+
+    def validate_stop_ids(self, value):
+        if len(value) != len(set(value)):
+            raise serializers.ValidationError('Stop ids must not contain duplicates.')
+
+        existing_stop_ids = set(Stop.objects.filter(stop_id__in=value, is_active=True).values_list('stop_id', flat=True))
+        missing_stop_ids = [stop_id for stop_id in value if stop_id not in existing_stop_ids]
+        if missing_stop_ids:
+            raise serializers.ValidationError(f'Active stops not found: {missing_stop_ids}.')
+
+        return value
+
+    def validate_route_name(self, value):
+        route_query = Route.objects.filter(route_name=value)
+        if self.instance is not None:
+            route_query = route_query.exclude(pk=self.instance.pk)
+        if route_query.exists():
+            raise serializers.ValidationError('A route with this name already exists.')
+        return value
+
+    def validate(self, attrs):
+        start_latitude = attrs.get('start_latitude', getattr(self.instance, 'start_latitude', None))
+        start_longitude = attrs.get('start_longitude', getattr(self.instance, 'start_longitude', None))
+        end_latitude = attrs.get('end_latitude', getattr(self.instance, 'end_latitude', None))
+        end_longitude = attrs.get('end_longitude', getattr(self.instance, 'end_longitude', None))
+
+        if 'stop_ids' in attrs:
+            stop_ids = attrs['stop_ids']
+        elif self.instance is not None:
+            stop_ids = list(self.instance.route_stops.order_by('stop_order').values_list('stop_id', flat=True))
+        else:
+            stop_ids = []
+
+        if all(value is not None for value in [start_latitude, start_longitude, end_latitude, end_longitude]) and stop_ids:
+            duplicate_routes = Route.objects.filter(
+                start_latitude=start_latitude,
+                start_longitude=start_longitude,
+                end_latitude=end_latitude,
+                end_longitude=end_longitude,
+            ).prefetch_related('route_stops')
+            if self.instance is not None:
+                duplicate_routes = duplicate_routes.exclude(pk=self.instance.pk)
+
+            for route in duplicate_routes:
+                route_stop_ids = list(route.route_stops.order_by('stop_order').values_list('stop_id', flat=True))
+                if route_stop_ids == stop_ids:
+                    raise serializers.ValidationError({
+                        'route': 'A route with the same start point, end point, and stop order already exists.'
+                    })
+
+        return attrs
+
+    def create(self, validated_data):
+        stop_ids = validated_data.pop('stop_ids', [])
+        with transaction.atomic():
+            route = Route.objects.create(**validated_data)
+            self._sync_stops_and_path(route, stop_ids)
+        return route
+
+    def update(self, instance, validated_data):
+        stop_ids = validated_data.pop('stop_ids', None)
+
+        with transaction.atomic():
+            for field, value in validated_data.items():
+                setattr(instance, field, value)
+            instance.save()
+
+            if stop_ids is None:
+                stop_ids = list(instance.route_stops.order_by('stop_order').values_list('stop_id', flat=True))
+            self._sync_stops_and_path(instance, stop_ids)
+        return instance
+
+    def _sync_stops_and_path(self, route, stop_ids):
+        stops_by_id = {
+            stop.stop_id: stop
+            for stop in Stop.objects.filter(stop_id__in=stop_ids)
+        }
+        try:
+            route.path = RoutePathService().build_path(route, stop_ids, stops_by_id)
+        except RoutePathServiceError as exc:
+            raise serializers.ValidationError({'path': str(exc)}) from exc
+
+        RouteStop.objects.filter(route=route).delete()
+        route_stops = [
+            RouteStop(route=route, stop=stops_by_id[stop_id], stop_order=index)
+            for index, stop_id in enumerate(stop_ids, start=1)
+        ]
+        RouteStop.objects.bulk_create(route_stops)
+        route.save(update_fields=['path', 'updated_at'])

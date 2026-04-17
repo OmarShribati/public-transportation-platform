@@ -5,7 +5,14 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/accounts/', include('PTP.urls')),
+    path('api/auth/', include('PTP.urls.auth_urls')),
+    path('api/accounts/', include('PTP.urls.account_urls')),
+    path('api/passenger/', include('PTP.urls.passenger_urls')),
+    path('api/driver/', include('PTP.urls.driver_urls')),
+    path('api/admin/', include('PTP.urls.admin_account_urls')),
+    path('api/admin/', include('PTP.urls.admin_route_urls')),
+    path('api/admin/', include('PTP.urls.admin_stop_urls')),
+    path('api/admin/', include('PTP.urls.admin_vehicle_urls')),
 ]
 
 if settings.DEBUG:
