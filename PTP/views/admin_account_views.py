@@ -248,16 +248,21 @@ class AdminAccountStatusView(APIView):
     def post(self, request, account_type, account_id, action):
         if not request.user.is_admin:
             return Response({'detail': 'Admin access is required.'}, status=status.HTTP_403_FORBIDDEN)
-        if action not in ('activate', 'deactivate', 'reject-deactivation'):
+        if action not in ('activate', 'deactivate', 'approve-deactivation', 'reject-deactivation'):
             return Response(
-                {'detail': 'action must be activate, deactivate, or reject-deactivation.'},
+                {'detail': 'action must be activate, deactivate, approve-deactivation, or reject-deactivation.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         new_status = 'active' if action == 'activate' else 'inactive'
 
         if account_type == 'passenger':
-            if action == 'reject-deactivation':
+            if action in ('approve-deactivation', 'reject-deactivation'):
+                if action == 'approve-deactivation':
+                    return Response(
+                        {'detail': 'approve-deactivation is only available for driver accounts.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 return Response(
                     {'detail': 'reject-deactivation is only available for driver accounts.'},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -314,6 +319,12 @@ class AdminAccountStatusView(APIView):
                     },
                     status=status.HTTP_200_OK,
                 )
+            if action == 'approve-deactivation':
+                if not account.deactivation_requested:
+                    return Response(
+                        {'detail': 'Driver does not have a pending deactivation request.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
             account.account_status = new_status
             account.deactivation_requested = False
             account.deactivation_request_status = 'none'
@@ -338,6 +349,11 @@ class AdminAccountStatusView(APIView):
                     'deactivation_request_status': account.deactivation_request_status,
                     'vehicle_id': account.vehicle_id,
                     'vehicle': vehicle_data(account.vehicle),
+                    'detail': (
+                        'Driver deactivation request approved successfully.'
+                        if action == 'approve-deactivation'
+                        else 'Driver account status updated successfully.'
+                    ),
                 },
                 status=status.HTTP_200_OK,
             )

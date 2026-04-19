@@ -148,12 +148,26 @@ class AdminStopSerializer(serializers.ModelSerializer):
         duplicate_stops = Stop.objects.filter(latitude=latitude, longitude=longitude)
         if self.instance is not None:
             duplicate_stops = duplicate_stops.exclude(pk=self.instance.pk)
-        if duplicate_stops.exists():
+        if duplicate_stops.filter(is_active=True).exists():
             raise serializers.ValidationError({
-                'coordinates': 'A stop with these coordinates already exists.'
+                'coordinates': 'An active stop with these coordinates already exists.'
             })
 
         return attrs
+
+    def create(self, validated_data):
+        inactive_stop = Stop.objects.filter(
+            latitude=validated_data['latitude'],
+            longitude=validated_data['longitude'],
+            is_active=False,
+        ).first()
+        if inactive_stop is not None:
+            inactive_stop.name = validated_data['name']
+            inactive_stop.is_active = True
+            inactive_stop.save(update_fields=['name', 'is_active', 'updated_at'])
+            return inactive_stop
+
+        return super().create(validated_data)
 
 
 class AdminRouteSerializer(serializers.ModelSerializer):
@@ -223,6 +237,16 @@ class AdminRouteSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
+        route_identity_fields = {
+            'start_latitude',
+            'start_longitude',
+            'end_latitude',
+            'end_longitude',
+            'stop_ids',
+        }
+        if self.instance is not None and not route_identity_fields.intersection(attrs):
+            return attrs
+
         start_latitude = attrs.get('start_latitude', getattr(self.instance, 'start_latitude', None))
         start_longitude = attrs.get('start_longitude', getattr(self.instance, 'start_longitude', None))
         end_latitude = attrs.get('end_latitude', getattr(self.instance, 'end_latitude', None))
@@ -263,15 +287,25 @@ class AdminRouteSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         stop_ids = validated_data.pop('stop_ids', None)
+        should_sync_path = bool(
+            {
+                'start_latitude',
+                'start_longitude',
+                'end_latitude',
+                'end_longitude',
+            }.intersection(validated_data)
+            or stop_ids is not None
+        )
 
         with transaction.atomic():
             for field, value in validated_data.items():
                 setattr(instance, field, value)
             instance.save()
 
-            if stop_ids is None:
-                stop_ids = list(instance.route_stops.order_by('stop_order').values_list('stop_id', flat=True))
-            self._sync_stops_and_path(instance, stop_ids)
+            if should_sync_path:
+                if stop_ids is None:
+                    stop_ids = list(instance.route_stops.order_by('stop_order').values_list('stop_id', flat=True))
+                self._sync_stops_and_path(instance, stop_ids)
         return instance
 
     def _sync_stops_and_path(self, route, stop_ids):

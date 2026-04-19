@@ -9,6 +9,7 @@ from PTP.models import DriverTrip, Route
 class PassengerRouteService:
     def __init__(self):
         self.match_threshold_meters = getattr(settings, 'PASSENGER_ROUTE_MATCH_THRESHOLD_METERS', 500)
+        self.boarding_pass_tolerance_meters = getattr(settings, 'PASSENGER_BOARDING_PASS_TOLERANCE_METERS', 100)
 
     def find_available_routes(self, start, destination):
         routes = Route.objects.filter(is_active=True).prefetch_related('route_stops__stop').order_by('route_id')
@@ -79,7 +80,10 @@ class PassengerRouteService:
             if boarding_match is not None:
                 coordinates = self._get_route_coordinates(route)
                 bus_match = self._nearest_point_on_route(latest_location.latitude, latest_location.longitude, coordinates)
-                if bus_match['distance_along_route_meters'] > boarding_match['distance_along_route_meters']:
+                if (
+                    bus_match['distance_along_route_meters']
+                    > boarding_match['distance_along_route_meters'] + self.boarding_pass_tolerance_meters
+                ):
                     continue
 
             active_buses.append(
@@ -92,7 +96,7 @@ class PassengerRouteService:
                     'is_full': trip.vehicle.is_full,
                     'started_at': trip.started_at,
                     'distance_before_boarding_meters': (
-                        round(boarding_match['distance_along_route_meters'] - bus_match['distance_along_route_meters'], 2)
+                        round(max(boarding_match['distance_along_route_meters'] - bus_match['distance_along_route_meters'], 0), 2)
                         if boarding_match is not None and bus_match is not None
                         else None
                     ),
