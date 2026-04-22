@@ -42,14 +42,30 @@ class AdminRouteDetailView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def _get_route_or_response(self, route_id):
+        try:
+            return Route.objects.prefetch_related('route_stops__stop').get(pk=route_id), None
+        except Route.DoesNotExist:
+            return None, Response({'detail': 'Route not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    def _set_route_active_status(self, route, is_active):
+        route.is_active = is_active
+        route.save(update_fields=['is_active', 'updated_at'])
+        return Response(
+            {
+                'route': AdminRouteSerializer(route).data,
+                'detail': f"Route {'activated' if is_active else 'deactivated'} successfully.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
     def patch(self, request, route_id):
         if not request.user.is_admin:
             return Response({'detail': 'Admin access is required.'}, status=status.HTTP_403_FORBIDDEN)
 
-        try:
-            route = Route.objects.prefetch_related('route_stops__stop').get(pk=route_id)
-        except Route.DoesNotExist:
-            return Response({'detail': 'Route not found.'}, status=status.HTTP_404_NOT_FOUND)
+        route, error_response = self._get_route_or_response(route_id)
+        if error_response:
+            return error_response
 
         serializer = AdminRouteSerializer(route, data=request.data, partial=True)
         if not serializer.is_valid():
@@ -64,25 +80,22 @@ class AdminRouteDetailView(APIView):
             status=status.HTTP_200_OK,
         )
 
-    def delete(self, request, route_id):
+    def post(self, request, route_id):
         if not request.user.is_admin:
             return Response({'detail': 'Admin access is required.'}, status=status.HTTP_403_FORBIDDEN)
 
-        try:
-            route = Route.objects.get(pk=route_id)
-        except Route.DoesNotExist:
-            return Response({'detail': 'Route not found.'}, status=status.HTTP_404_NOT_FOUND)
+        action = request.data.get('action')
+        if action not in ('activate', 'deactivate'):
+            return Response(
+                {'detail': 'action must be activate or deactivate.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        route.is_active = False
-        route.save(update_fields=['is_active', 'updated_at'])
-        return Response(
-            {
-                'route': AdminRouteSerializer(route).data,
-                'detail': 'Route deactivated successfully.',
-            },
-            status=status.HTTP_200_OK,
-        )
+        route, error_response = self._get_route_or_response(route_id)
+        if error_response:
+            return error_response
 
+        return self._set_route_active_status(route, action == 'activate')
 
 class AdminVehicleRouteAssignmentView(APIView):
     authentication_classes = [TokenAuthentication]

@@ -4,7 +4,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from PTP.models import DriverToken
-from PTP.serializers import DriverUpdateSerializer
+from PTP.serializers import AdminRouteSerializer, DriverUpdateSerializer
+
+
+def driver_route_data(driver):
+    if driver.vehicle is None or driver.vehicle.route is None:
+        return None
+    return AdminRouteSerializer(driver.vehicle.route).data
 
 
 class DriverProfileView(APIView):
@@ -14,7 +20,7 @@ class DriverProfileView(APIView):
             return None
         token_key = auth_header.split(' ', 1)[1].strip()
         try:
-            return DriverToken.objects.select_related('driver').get(key=token_key).driver
+            return DriverToken.objects.select_related('driver__vehicle__route').get(key=token_key).driver
         except DriverToken.DoesNotExist:
             return None
 
@@ -48,6 +54,7 @@ class DriverProfileView(APIView):
                 'deactivation_requested': driver.deactivation_requested,
                 'deactivation_request_status': driver.deactivation_request_status,
                 'vehicle_id': driver.vehicle_id,
+                'route': driver_route_data(driver),
                 'created_at': driver.created_at,
             },
             status=status.HTTP_200_OK,
@@ -94,6 +101,7 @@ class DriverProfileView(APIView):
                 'deactivation_requested': driver.deactivation_requested,
                 'deactivation_request_status': driver.deactivation_request_status,
                 'vehicle_id': driver.vehicle_id,
+                'route': driver_route_data(driver),
             },
             status=status.HTTP_200_OK,
         )

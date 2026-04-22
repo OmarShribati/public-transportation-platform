@@ -25,6 +25,23 @@ def vehicle_data(vehicle):
     }
 
 
+def file_url(request, file_field):
+    if not file_field:
+        return None
+    try:
+        return request.build_absolute_uri(file_field.url)
+    except ValueError:
+        return None
+
+
+def driver_document_data(request, driver):
+    return {
+        'id_card_image_1_url': file_url(request, driver.id_card_image_1),
+        'id_card_image_2_url': file_url(request, driver.id_card_image_2),
+        'license_image_url': file_url(request, driver.license_image),
+    }
+
+
 class AdminAccountsView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -62,8 +79,9 @@ class AdminAccountsView(APIView):
                 'vehicle_id': driver.vehicle_id,
                 'vehicle': vehicle_data(driver.vehicle),
                 'created_at': driver.created_at,
+                **driver_document_data(request, driver),
             }
-            for driver in Driver.objects.select_related('vehicle').order_by('-created_at')
+            for driver in Driver.objects.select_related('vehicle').exclude(approval_status='pending').order_by('-created_at')
         ]
 
         return Response({'passengers': passengers, 'drivers': drivers}, status=status.HTTP_200_OK)
@@ -136,6 +154,7 @@ class AdminAccountsView(APIView):
                 'deactivation_request_status': account.deactivation_request_status,
                 'vehicle_id': account.vehicle_id,
                 'vehicle': vehicle_data(vehicle),
+                **driver_document_data(request, account),
                 'detail': 'Driver account created and approved successfully.',
             },
             status=status.HTTP_201_CREATED,
@@ -236,6 +255,7 @@ class AdminAccountUpdateView(APIView):
                 'deactivation_request_status': account.deactivation_request_status,
                 'vehicle_id': account.vehicle_id,
                 'vehicle': vehicle_data(account.vehicle),
+                **driver_document_data(request, account),
             },
             status=status.HTTP_200_OK,
         )
@@ -315,6 +335,7 @@ class AdminAccountStatusView(APIView):
                         'deactivation_request_status': account.deactivation_request_status,
                         'vehicle_id': account.vehicle_id,
                         'vehicle': vehicle_data(account.vehicle),
+                        **driver_document_data(request, account),
                         'detail': 'Driver deactivation request rejected successfully.',
                     },
                     status=status.HTTP_200_OK,
@@ -349,6 +370,7 @@ class AdminAccountStatusView(APIView):
                     'deactivation_request_status': account.deactivation_request_status,
                     'vehicle_id': account.vehicle_id,
                     'vehicle': vehicle_data(account.vehicle),
+                    **driver_document_data(request, account),
                     'detail': (
                         'Driver deactivation request approved successfully.'
                         if action == 'approve-deactivation'
@@ -381,6 +403,7 @@ class AdminDriverRequestsView(APIView):
                 'vehicle_id': driver.vehicle_id,
                 'vehicle': vehicle_data(driver.vehicle),
                 'created_at': driver.created_at,
+                **driver_document_data(request, driver),
             }
             for driver in Driver.objects.select_related('vehicle').filter(approval_status='pending').order_by('-created_at')
         ]
@@ -399,6 +422,7 @@ class AdminDriverRequestsView(APIView):
                 'vehicle_id': driver.vehicle_id,
                 'vehicle': vehicle_data(driver.vehicle),
                 'created_at': driver.created_at,
+                **driver_document_data(request, driver),
             }
             for driver in Driver.objects.select_related('vehicle')
             .filter(deactivation_requested=True, deactivation_request_status='pending')

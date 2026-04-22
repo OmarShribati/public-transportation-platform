@@ -21,6 +21,23 @@ def vehicle_data(vehicle):
     }
 
 
+def file_url(request, file_field):
+    if not file_field:
+        return None
+    try:
+        return request.build_absolute_uri(file_field.url)
+    except ValueError:
+        return None
+
+
+def driver_document_data(request, driver):
+    return {
+        'id_card_image_1_url': file_url(request, driver.id_card_image_1),
+        'id_card_image_2_url': file_url(request, driver.id_card_image_2),
+        'license_image_url': file_url(request, driver.license_image),
+    }
+
+
 class AdminDriverApprovalView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -132,6 +149,7 @@ class AdminDriverApprovalView(APIView):
                     'account_status': driver.account_status,
                     'vehicle_id': driver.vehicle_id,
                     'vehicle': vehicle_data(driver.vehicle),
+                    **driver_document_data(request, driver),
                     'detail': 'Driver account approved successfully.',
                 },
                 status=status.HTTP_200_OK,
@@ -150,6 +168,7 @@ class AdminDriverApprovalView(APIView):
                 'account_status': driver.account_status,
                 'vehicle_id': driver.vehicle_id,
                 'vehicle': vehicle_data(driver.vehicle),
+                **driver_document_data(request, driver),
                 'detail': 'Driver account rejected successfully.',
             },
             status=status.HTTP_200_OK,
