@@ -1,4 +1,6 @@
+from .complaint import Complaint
 from .driver import Driver
+from .favorite_trip import FavoriteTrip
 from .driver_token import DriverToken
 from .driver_trip import DriverTrip
 from .route import Route
@@ -10,7 +12,9 @@ from .vehicle import Vehicle
 from .vehicle_location import VehicleLocation
 
 __all__ = [
+    'Complaint',
     'Driver',
+    'FavoriteTrip',
     'DriverToken',
     'DriverTrip',
     'Route',

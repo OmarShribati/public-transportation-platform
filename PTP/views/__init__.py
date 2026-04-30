@@ -2,6 +2,7 @@ from .admin_views import (
     AdminAccountStatusView,
     AdminAccountUpdateView,
     AdminAccountsView,
+    AdminComplaintsView,
     AdminDriverRequestsView,
     AdminDriverApprovalView,
 )
@@ -18,7 +19,13 @@ from .driver_tracking_views import (
     DriverVehicleStatusView,
 )
 from .logout_views import LogoutView
-from .passenger_views import PassengerDeactivateView, PassengerProfileView
+from .passenger_views import (
+    PassengerComplaintsView,
+    PassengerDeactivateView,
+    PassengerFavoriteTripDetailView,
+    PassengerFavoriteTripsView,
+    PassengerProfileView,
+)
 from .passenger_trip_views import (
     PassengerRouteDetailView,
     PassengerRouteTrackingView,
@@ -30,6 +37,7 @@ __all__ = [
     'AdminAccountStatusView',
     'AdminAccountUpdateView',
     'AdminAccountsView',
+    'AdminComplaintsView',
     'AdminDriverRequestsView',
     'AdminDriverApprovalView',
     'AdminRouteDetailView',
@@ -49,7 +57,10 @@ __all__ = [
     'DriverVehicleStatusView',
     'LoginView',
     'LogoutView',
+    'PassengerComplaintsView',
     'PassengerDeactivateView',
+    'PassengerFavoriteTripDetailView',
+    'PassengerFavoriteTripsView',
     'PassengerProfileView',
     'PassengerRouteDetailView',
     'PassengerRouteTrackingView',

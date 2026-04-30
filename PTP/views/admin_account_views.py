@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from PTP.models import Driver, DriverToken, Route, User, Vehicle
+from PTP.models import Complaint, Driver, DriverToken, Route, User, Vehicle
 from PTP.serializers import AdminAccountCreateSerializer, AdminAccountUpdateSerializer
 from PTP.services.account_service import AccountService
 
@@ -436,3 +436,31 @@ class AdminDriverRequestsView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class AdminComplaintsView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_admin:
+            return Response({'detail': 'Admin access is required.'}, status=status.HTTP_403_FORBIDDEN)
+
+        complaints = [
+            {
+                'complaint_id': complaint.complaint_id,
+                'message': complaint.message,
+                'image_url': file_url(request, complaint.image),
+                'created_at': complaint.created_at,
+                'passenger': {
+                    'id': complaint.passenger_id,
+                    'email': complaint.passenger.email,
+                    'full_name': complaint.passenger.full_name,
+                    'phone': complaint.passenger.phone,
+                    'account_status': complaint.passenger.account_status,
+                },
+            }
+            for complaint in Complaint.objects.select_related('passenger').order_by('-created_at')
+        ]
+
+        return Response({'complaints': complaints}, status=status.HTTP_200_OK)

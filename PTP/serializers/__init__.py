@@ -5,6 +5,7 @@ from .admin_serializers import (
     AdminStopSerializer,
 )
 from .auth_serializers import UserLoginSerializer
+from .complaint_serializers import ComplaintCreateSerializer
 from .driver_tracking_serializers import DriverLocationSerializer, DriverVehicleStatusSerializer
 from .passenger_trip_serializers import PassengerPointSerializer, PassengerTripSearchSerializer
 from .profile_serializers import DriverUpdateSerializer, PassengerUpdateSerializer
@@ -15,6 +16,7 @@ __all__ = [
     'AdminAccountCreateSerializer',
     'AdminRouteSerializer',
     'AdminStopSerializer',
+    'ComplaintCreateSerializer',
     'DriverLocationSerializer',
     'DriverVehicleStatusSerializer',
     'DriverUpdateSerializer',
