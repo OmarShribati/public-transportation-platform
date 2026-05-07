@@ -1,5 +1,9 @@
+from datetime import timedelta
+
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models import Count, Q
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
@@ -7,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from PTP.models import Complaint, Driver, DriverToken, Route, User, Vehicle
+from PTP.models import Complaint, Driver, DriverToken, DriverTrip, FavoriteTrip, Route, Stop, User, Vehicle, VehicleLocation
 from PTP.serializers import AdminAccountCreateSerializer, AdminAccountUpdateSerializer
 from PTP.services.account_service import AccountService
 
@@ -464,3 +468,168 @@ class AdminComplaintsView(APIView):
         ]
 
         return Response({'complaints': complaints}, status=status.HTTP_200_OK)
+
+
+class AdminStatisticsView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_admin:
+            return Response({'detail': 'Admin access is required.'}, status=status.HTTP_403_FORBIDDEN)
+
+        now = timezone.now()
+        start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        seven_days_ago = now - timedelta(days=7)
+        thirty_days_ago = now - timedelta(days=30)
+
+        passengers = User.objects.filter(is_admin=False)
+        drivers = Driver.objects.all()
+        routes = Route.objects.all()
+        vehicles = Vehicle.objects.all()
+        trips = DriverTrip.objects.all()
+        stops = Stop.objects.all()
+        favorites = FavoriteTrip.objects.all()
+        complaints = Complaint.objects.all()
+
+        top_favorite_routes = list(
+            FavoriteTrip.objects.values('route_id', 'route__route_name', 'route__is_active')
+            .annotate(favorite_count=Count('favorite_trip_id'))
+            .order_by('-favorite_count', 'route_id')[:5]
+        )
+        top_favorite_routes = [
+            {
+                'route_id': item['route_id'],
+                'route_name': item['route__route_name'],
+                'favorite_count': item['favorite_count'],
+                'is_active': item['route__is_active'],
+            }
+            for item in top_favorite_routes
+        ]
+
+        top_routes_by_trips = list(
+            DriverTrip.objects.values('route_id', 'route__route_name', 'route__is_active')
+            .annotate(
+                total_trips=Count('trip_id'),
+                active_trips=Count('trip_id', filter=Q(status='active')),
+            )
+            .order_by('-total_trips', 'route_id')[:5]
+        )
+        top_routes_by_trips = [
+            {
+                'route_id': item['route_id'],
+                'route_name': item['route__route_name'],
+                'total_trips': item['total_trips'],
+                'active_trips': item['active_trips'],
+                'is_active': item['route__is_active'],
+            }
+            for item in top_routes_by_trips
+        ]
+
+        active_trip_ids = list(trips.filter(status='active').values_list('trip_id', flat=True))
+        off_route_vehicles_now = []
+        if active_trip_ids:
+            latest_locations_by_trip = {}
+            for trip_id in active_trip_ids:
+                latest_location = VehicleLocation.objects.filter(trip_id=trip_id).select_related('trip__route', 'vehicle', 'driver').first()
+                if latest_location is not None:
+                    latest_locations_by_trip[trip_id] = latest_location
+
+            off_route_vehicles_now = [
+                {
+                    'trip_id': location.trip_id,
+                    'route_id': location.trip.route_id,
+                    'route_name': location.trip.route.route_name,
+                    'driver_id': location.driver_id,
+                    'driver_name': location.driver.full_name,
+                    'vehicle_id': location.vehicle_id,
+                    'vehicle_number': location.vehicle.vehicle_number,
+                    'distance_to_route_meters': location.distance_to_route_meters,
+                    'latitude': str(location.latitude),
+                    'longitude': str(location.longitude),
+                    'recorded_at': location.recorded_at,
+                }
+                for location in latest_locations_by_trip.values()
+                if location.is_off_route
+            ]
+
+        recent_complaints = [
+            {
+                'complaint_id': complaint.complaint_id,
+                'message': complaint.message,
+                'image_url': file_url(request, complaint.image),
+                'created_at': complaint.created_at,
+                'passenger_id': complaint.passenger_id,
+                'passenger_name': complaint.passenger.full_name,
+            }
+            for complaint in complaints.select_related('passenger').order_by('-created_at')[:5]
+        ]
+
+        active_routes_with_trips = Route.objects.filter(trips__status='active').distinct().count()
+
+        complaints_with_image = complaints.exclude(image='').exclude(image__isnull=True).count()
+
+        return Response(
+            {
+                'accounts': {
+                    'passengers_total': passengers.count(),
+                    'passengers_active': passengers.filter(account_status='active').count(),
+                    'passengers_inactive': passengers.filter(account_status='inactive').count(),
+                    'drivers_total': drivers.count(),
+                    'drivers_approved': drivers.filter(approval_status='approved').count(),
+                    'drivers_rejected': drivers.filter(approval_status='rejected').count(),
+                    'drivers_pending': drivers.filter(approval_status='pending').count(),
+                    'drivers_active': drivers.filter(account_status='active').count(),
+                    'drivers_inactive': drivers.filter(account_status='inactive').count(),
+                    'pending_deactivation_requests': drivers.filter(
+                        deactivation_requested=True,
+                        deactivation_request_status='pending',
+                    ).count(),
+                },
+                'network': {
+                    'routes_total': routes.count(),
+                    'routes_active': routes.filter(is_active=True).count(),
+                    'routes_inactive': routes.filter(is_active=False).count(),
+                    'routes_with_active_trips': active_routes_with_trips,
+                    'routes_without_active_trips': routes.filter(is_active=True).count() - active_routes_with_trips,
+                    'stops_total': stops.count(),
+                    'stops_active': stops.filter(is_active=True).count(),
+                    'stops_inactive': stops.filter(is_active=False).count(),
+                },
+                'vehicles': {
+                    'vehicles_total': vehicles.count(),
+                    'vehicles_active': vehicles.filter(is_active=True).count(),
+                    'vehicles_inactive': vehicles.filter(is_active=False).count(),
+                    'vehicles_full_now': vehicles.filter(is_full=True).count(),
+                    'vehicles_assigned_to_route': vehicles.filter(route__isnull=False).count(),
+                    'government_vehicles': vehicles.filter(ownership='government').count(),
+                    'driver_owned_vehicles': vehicles.filter(ownership='driver').count(),
+                },
+                'trips': {
+                    'trips_total': trips.count(),
+                    'trips_active_now': trips.filter(status='active').count(),
+                    'trips_completed': trips.filter(status='completed').count(),
+                    'trips_started_today': trips.filter(started_at__gte=start_of_today).count(),
+                    'top_routes_by_trips': top_routes_by_trips,
+                },
+                'tracking': {
+                    'off_route_vehicles_now_count': len(off_route_vehicles_now),
+                    'off_route_vehicles_now': off_route_vehicles_now,
+                },
+                'favorites': {
+                    'favorites_total': favorites.count(),
+                    'passengers_with_favorites': favorites.values('passenger_id').distinct().count(),
+                    'top_routes': top_favorite_routes,
+                },
+                'complaints': {
+                    'complaints_total': complaints.count(),
+                    'complaints_today': complaints.filter(created_at__gte=start_of_today).count(),
+                    'complaints_last_7_days': complaints.filter(created_at__gte=seven_days_ago).count(),
+                    'complaints_last_30_days': complaints.filter(created_at__gte=thirty_days_ago).count(),
+                    'complaints_with_image': complaints_with_image,
+                    'complaints_without_image': complaints.count() - complaints_with_image,
+                    'recent_complaints': recent_complaints,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )

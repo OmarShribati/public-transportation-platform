@@ -2,6 +2,7 @@ from django.urls import path
 
 from PTP.views import (
     AdminAccountStatusView,
+    AdminStatisticsView,
     AdminAccountUpdateView,
     AdminAccountsView,
     AdminComplaintsView,
@@ -11,6 +12,7 @@ from PTP.views import (
 
 
 urlpatterns = [
+    path('statistics', AdminStatisticsView.as_view(), name='admin-statistics'),
     path('accounts', AdminAccountsView.as_view(), name='admin-accounts'),
     path('accounts/<str:account_type>/<int:account_id>', AdminAccountUpdateView.as_view(), name='admin-account-update'),
     path('accounts/<str:account_type>/<int:account_id>/<str:action>', AdminAccountStatusView.as_view(), name='admin-account-status'),

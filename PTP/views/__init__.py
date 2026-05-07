@@ -1,5 +1,6 @@
 from .admin_views import (
     AdminAccountStatusView,
+    AdminStatisticsView,
     AdminAccountUpdateView,
     AdminAccountsView,
     AdminComplaintsView,
@@ -35,6 +36,7 @@ from .passenger_trip_views import (
 
 __all__ = [
     'AdminAccountStatusView',
+    'AdminStatisticsView',
     'AdminAccountUpdateView',
     'AdminAccountsView',
     'AdminComplaintsView',
