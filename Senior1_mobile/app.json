@@ -1,0 +1,85 @@
+{
+  "expo": {
+    "name": "PTP",
+    "slug": "ptp-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images.png",
+    "scheme": "ptp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "com.adnanalashram.ptp",
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyACoGetHYMeKadpkRMkuvGphEK1bdGu9wU"
+      },
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification",
+          "remote-notification"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "usesCleartextTraffic": true,
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/images.png"
+      },
+      "softwareKeyboardLayoutMode": "pan",
+      "navigationBar": {
+        "visible": "edgeToEdge", 
+        "backgroundColor": "#00000000",
+        "barStyle": "light-content"
+      },
+      "package": "com.adnanalashram.ptp",
+      "googleServicesFile": "./google-services.json",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyACoGetHYMeKadpkRMkuvGphEK1bdGu9wU"
+        }
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF",
+          "dark": {
+            "backgroundColor": "#059669"
+          }
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "00fa81a2-d923-4446-8675-480a45f38aaa"
+      }
+    },
+    "owner": "adnanalashram"
+  }
+}
