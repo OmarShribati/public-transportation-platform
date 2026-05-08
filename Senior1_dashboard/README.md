@@ -1,0 +1,1 @@
+npm i react-i18next @tanstack/react-router clsx @tanstack/react-query i18next react-select-async-paginate formik @tanstack/react-table react-hot-toast framer-motion react-datepicker crypto-js yup axios lucide-react vite-tsconfig-paths @tailwindcss/vite

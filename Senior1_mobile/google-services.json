@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "162197836780",
+    "project_id": "ptpp-dc07b",
+    "storage_bucket": "ptpp-dc07b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:162197836780:android:b5a272ce4c4082618be6c9",
+        "android_client_info": {
+          "package_name": "com.adnanalashram.ptp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5i1Y7kQyPJ7STNG50n4wH_3t3WuL52y0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
