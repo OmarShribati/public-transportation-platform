@@ -1,0 +1,3 @@
+API_URL = "http://127.0.0.1:8000/api/payment/scan/"
+
+DEVICE_SECRET = "5596a82e8667952558d42e87af29f9e3e6943dca"

@@ -1,0 +1,14 @@
+# AI Service Dependencies
+# Install with: pip install -r requirements.txt
+
+# YOLOv8 (includes ByteTrack support)
+ultralytics>=8.0.0
+
+# Computer vision
+opencv-python>=4.8.0
+
+# HTTP client for Django API
+requests>=2.31.0
+
+# Numerical computing (already pulled by ultralytics, pinned for clarity)
+numpy>=1.24.0
