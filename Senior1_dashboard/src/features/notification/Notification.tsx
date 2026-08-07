@@ -2,8 +2,6 @@ import { FormBuilder } from '@/components/form/FormBuilder';
 import { Formik } from 'formik';
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
-import { UserAPI } from '../users/api';
-import { DriverAPI } from '../users/drivers/api';
 import { NotificationAPI } from './api';
 
 export const Notification = () => {
@@ -12,21 +10,18 @@ export const Notification = () => {
     const validationSchema = Yup.object().shape({
         title: Yup.string().required(t('required')),
         body: Yup.string().required(t('required')),
-        target_group: Yup.string().required(t('required')),
-        selected_ids: Yup.array().when('target_group', {
-            is: (val: string) => val === 'specific_users' || val === 'specific_drivers',
-            then: (schema) => schema.min(1, t('please_select_at_least_one')),
-            otherwise: (schema) => schema.notRequired(),
-        }),
+       
     });
 
-    const fields = (formik: any): any[][] => [
+    const fields =  [
         [{
             name: "title",
             label: "Notification Title",
             type: "text",
             placeholder: "Enter notification title...",
             required: true,
+            wrapperClass: "col-span-2 md:col-span-1"
+            
         }],
         [{
             name: "body",
@@ -34,38 +29,9 @@ export const Notification = () => {
             type: "textarea",
             placeholder: "Type your message here...",
             required: true,
+            wrapperClass: "col-span-2 md:col-span-1"
         }],
-        [{
-            name: "target_group",
-            label: "Send To",
-            type: "select",
-            options: [
-                { value: "all", label: "All Users & Drivers" },
-                { value: "all_users", label: "All Passengers" },
-                { value: "all_drivers", label: "All Drivers" },
-                { value: "specific_users", label: "Specific Passengers" },
-                { value: "specific_drivers", label: "Specific Drivers" },
-            ],
-            placeholder: "Select target audience",
-        }],
-        ...(formik?.values?.target_group === "specific_users" ? [[{
-            name: "selected_ids",
-            label: "Select Passengers",
-            type: "selectMulti",
-            url: () => UserAPI.list(),
-            optionLabel: "name",
-            optionValue: "id",
-            placeholder: "Search and select passengers...",
-        }]] : []),
-        ...(formik?.values?.target_group === "specific_drivers" ? [[{
-            name: "selected_ids",
-            label: "Select Drivers",
-            type: "selectMulti",
-            url: () => DriverAPI.list(),
-            optionLabel: "name",
-            optionValue: "id",
-            placeholder: "Search and select drivers...",
-        }]] : []),
+     
     ];
 
 
@@ -83,23 +49,19 @@ export const Notification = () => {
                     </div>
                 </div>
 
-                <div className="max-w-4xl bg-[#111214] p-8 rounded-3xl border border-white/5 shadow-2xl">
+                <div className=" bg-[#111214] p-8 rounded-3xl border border-white/5 shadow-2xl">
                     <FormBuilder
-                        fields={fields(Formik)}
+                        fields={fields}
                         initialValues={{
                             title: "",
                             body: "",
-                            target_group: "all",
-                            selected_ids: [],
                         }}
                         validationSchema={validationSchema}
                         query={(values) => {
                             const payload = {
                                 title: values.title,
                                 body: values.body,
-                                target: values.target_group,
-                                ids: values.target_group.includes('specific') ? values.selected_ids : [],
-                            };
+                              };
 
                             return NotificationAPI.send(payload);
                         }}

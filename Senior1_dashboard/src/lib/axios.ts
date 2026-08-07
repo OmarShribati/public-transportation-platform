@@ -14,6 +14,7 @@ export const API = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
   headers: {
     "Content-Type": "multipart/form-data",
+    
   },
 });
 
@@ -22,6 +23,10 @@ API.interceptors.request.use((config) => {
   const token = tokenStorage.getAccessToken();
   if (token) {
     config.headers.Authorization = `token ${token}`;
+     config.headers.set(
+    "ngrok-skip-browser-warning",
+    "true"
+  );
   }
   return config;
 });

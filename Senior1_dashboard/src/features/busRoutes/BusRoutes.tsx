@@ -30,8 +30,16 @@ export const BusRoutes = () => {
             header: "Stops",
             cell: ({ row }) => {
 
-                const count = row.original.path?.waypoints.filter(w => w.type === 'stop').length || 0;
+                const count = row.original.path?.waypoints?.filter(w => w.type === 'stop').length || 0;
                 return <span className="badge bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded">{count} Stops</span>;
+            }
+        },
+        {
+            id: "zone_name",
+            header: "Zone",
+            cell: ({ row }) => {
+                const zone = row.original.zone_name;
+                return <span className="badge bg-blue-500/10 text-blue-500 px-2 py-1 rounded">{zone || "N/A"}</span>;
             }
         },
         {

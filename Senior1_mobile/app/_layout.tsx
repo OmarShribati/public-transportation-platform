@@ -78,6 +78,12 @@ function RootLayoutContent() {
       }
       return;
     }
+    if (userRole === "merchant") {
+      if (currentGroup !== "(merchant)") {
+        router.replace('/(merchant)/(tabs)');
+      }
+      return;
+    }
   }, [token, account_type, isLoading, segments]);
 
   if (isLoading) {

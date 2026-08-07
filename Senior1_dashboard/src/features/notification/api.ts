@@ -1,7 +1,7 @@
 import { BaseService } from "@/lib/baseServices";
 
 export const NotificationsService = new BaseService(
-  "/admin/notifications",
+  "/notifications/broadcast/passengers/",
   "complaints"
 );
 

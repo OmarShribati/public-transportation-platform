@@ -8,7 +8,9 @@ import {Add as AddBusStops } from '@/features/busStops/Add';
 import {Add as AddBusRoutes } from '@/features/busRoutes/Add';
 import {edit as EditBusStops } from '@/features/busStops/Edit';
 import {Details as DetailsBusRoutes } from '@/features/busRoutes/Details';
+import {Details as DetailsMerchat } from '@/features/Merchants/Details';
 import {Details as DetailsDrivers } from '@/features/users/drivers/Details';
+import {Details as DetailsPassengers } from '@/features/users/passengers/Details';
 import {Details as DetailsVehicles } from '@/features/vehicles/Details';
 import { BusRoutes } from '@/features/busRoutes/BusRoutes';
 import { Vehicles } from '@/features/vehicles/Vehicles';
@@ -16,6 +18,10 @@ import { Drivers } from '@/features/users/drivers/Drivers';
 import { Notification } from '@/features/notification/Notification';
 import { Complaints } from '@/features/complaints/Complaints';
 import { Dashboard } from '@/features/dashboard/Dashboard';
+import { Transactions } from '@/features/transactions/Transactions';
+import { Merchants } from '@/features/Merchants/Merchants';
+import { Add as MerchantsAdd } from '@/features/Merchants/Add';
+import { Zone } from '@/features/zone/Zone';
 
 
 const rootRoute = new RootRoute({
@@ -52,8 +58,28 @@ const protectedWrapper = new Route({
 export const protectedRoutes = [
     new Route({
         getParentRoute: () => protectedWrapper,
+        path: '/merchants',
+        component: Merchants,
+    }),
+    new Route({
+        getParentRoute: () => protectedWrapper,
+        path: '/zone',
+        component: Zone,
+    }),
+    new Route({
+        getParentRoute: () => protectedWrapper,
+        path: '/merchants/add',
+        component: MerchantsAdd,
+    }),
+    new Route({
+        getParentRoute: () => protectedWrapper,
         path: '/drivers/requests',
         component: Drivers,
+    }),
+    new Route({
+        getParentRoute: () => protectedWrapper,
+        path: '/transactions',
+        component: Transactions,
     }),
     new Route({
         getParentRoute: () => protectedWrapper,
@@ -61,6 +87,20 @@ export const protectedRoutes = [
         parseParams: ({ id }) => ({ id }),
         stringifyParams: ({ id }) => ({ id }),
         component: DetailsDrivers,
+    }),
+    new Route({
+        getParentRoute: () => protectedWrapper,
+        path: '/merchat/$id',
+        parseParams: ({ id }) => ({ id }),
+        stringifyParams: ({ id }) => ({ id }),
+        component: DetailsMerchat,
+    }),
+    new Route({
+        getParentRoute: () => protectedWrapper,
+        path: '/passengers/$id',
+        parseParams: ({ id }) => ({ id }),
+        stringifyParams: ({ id }) => ({ id }),
+        component: DetailsPassengers,
     }),
     new Route({
         getParentRoute: () => protectedWrapper,

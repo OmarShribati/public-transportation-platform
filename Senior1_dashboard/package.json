@@ -20,6 +20,7 @@
     "crypto-js": "^4.2.0",
     "formik": "^2.4.9",
     "framer-motion": "^12.38.0",
+    "html-to-image": "^1.11.13",
     "i18next": "^26.0.5",
     "lucide-react": "^1.8.0",
     "react": "^18.2.0",
@@ -27,7 +28,9 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
     "react-i18next": "^17.0.3",
+    "react-qr-code": "^2.2.0",
     "react-select-async-paginate": "^0.7.11",
+    "react-to-print": "^3.3.0",
     "recharts": "^3.8.1",
     "vite-tsconfig-paths": "^6.1.1",
     "yup": "^1.7.1"

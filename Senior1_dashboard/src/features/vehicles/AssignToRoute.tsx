@@ -1,13 +1,13 @@
 import React from 'react';
 import { FormBuilder } from "@/components/form/FormBuilder";
-import { RouteAPI } from "../busRoutes/api"; // تأكد من المسار الصحيح للـ API
-import { VehiclesAPI } from "./api"; // الـ API الخاص بالمركبات
+import { RouteAPI } from "../busRoutes/api"; 
+import { VehiclesAPI } from "./api"; 
 import { Route } from "lucide-react";
 import { VehiclesVal } from './validation';
 
 interface AssignProps {
   v_id: string | number;
-  v_number?: string; // اختياري لعرض رقم المركبة بالفورم
+  v_number?: string;
 }
 
 export const AssignToRoute = ({ v_id, v_number }: AssignProps) => {
@@ -28,12 +28,7 @@ export const AssignToRoute = ({ v_id, v_number }: AssignProps) => {
   ];
 
   return (
-    <div className="bg-[#111214] border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-8 opacity-5">
-        <Route size={120} />
-      </div>
-
-      <div className="relative z-10">
+     <div className="relative z-10">
         <div className="mb-8">
           <h3 className="text-2xl font-black tracking-tight text-white mb-2">
             Assign Vehicle to Route
@@ -53,6 +48,5 @@ export const AssignToRoute = ({ v_id, v_number }: AssignProps) => {
           }}
         />
       </div>
-    </div>
   );
 };

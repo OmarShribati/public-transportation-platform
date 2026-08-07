@@ -23,10 +23,6 @@ export default function AuthScreen() {
   const openModal = () => setVisible(true);
   const closeModal = () => setVisible(false);
 
-  const loginFields = useMemo(() => [
-    { name: "email", type: "email", placeholder: "Email", label: "Email" },
-    { name: "password", type: "password", placeholder: "Password", label: "Password" }
-  ], []);
 
   const passengerFields = useMemo(() => [
     { name: "full_name", type: "text", placeholder: "Full Name", label: "Full Name" },
@@ -61,6 +57,10 @@ export default function AuthScreen() {
 
   ], []);
 
+  const loginFields = useMemo(() => [
+    { name: "email", type: "email", placeholder: "Email", label: "Email" },
+    { name: "password", type: "password", placeholder: "Password", label: "Password" }
+  ], []);
 const handleAuth = async (values: any) => {
   const token = await SecureStore.getItemAsync('expo_push_token');  
   const signupPayload = {
@@ -70,7 +70,7 @@ const handleAuth = async (values: any) => {
   };
   const loginPayload = {
     ...values,
-    // expo_push_token:token,
+    expo_push_token:token,
   };
   const res =
     authMode === 'login'

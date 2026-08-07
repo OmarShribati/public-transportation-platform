@@ -4,7 +4,7 @@
     "slug": "ptp-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images.png",
+    "icon": "./assets/image-removebg-preview.png",
     "scheme": "ptp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -16,7 +16,6 @@
       },
       "infoPlist": {
         "UIBackgroundModes": [
-          "remote-notification",
           "remote-notification"
         ],
         "ITSAppUsesNonExemptEncryption": false
@@ -26,7 +25,7 @@
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/images.png"
+        "foregroundImage": "./assets/image-removebg-preview.png"
       },
       "softwareKeyboardLayoutMode": "pan",
       "navigationBar": {
@@ -41,6 +40,10 @@
           "apiKey": "AIzaSyACoGetHYMeKadpkRMkuvGphEK1bdGu9wU"
         }
       },
+      "notification": {
+        "icon": "./assets/image-removebg-preview.png",
+        "color": "#10B981"
+      },
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION"
@@ -49,7 +52,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images.png"
+      "favicon": "./assets/image-removebg-preview.png"
     },
     "plugins": [
       "expo-router",
@@ -57,7 +60,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images.png",
+          "image": "./assets/image-removebg-preview.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#FFFFFF",

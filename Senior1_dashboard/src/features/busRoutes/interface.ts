@@ -25,4 +25,6 @@ export interface Waypoint {
     end_longitude: string;
     price: string;
     path: RoutePath;
+        zone_name?:string
+
   }

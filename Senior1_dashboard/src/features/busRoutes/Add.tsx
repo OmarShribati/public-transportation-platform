@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { StopAPI } from "../busStops/api";
 import { RouteAPI } from "./api";
 import { RouteVal } from "./validation";
+import { ZoneAPI } from "../zone/api";
 
 const GlassButton = ({ label, icon, onClick, active }: { label: string, icon?: any, onClick: () => void, active: boolean }) => (
     <button
@@ -119,6 +120,17 @@ export const Add = () => {
             },
         ],
         [
+            {
+                name: "zone",
+                label: "Select Zone",
+                type: "select",
+                url: () => ZoneAPI.list(),
+                optionLabel: "name",
+                optionValue: "zone_id",
+                wrapperClass: "col-span-2"
+            },
+        ],
+        [
             { name: "start_point", label: "Departure Point", type: "map", wrapperClass: "col-span-2 mb-6" },
             { name: "end_point", label: "Arrival Point", type: "map", wrapperClass: "col-span-2" },
         ],
@@ -164,6 +176,7 @@ export const Add = () => {
 
                                 const payload = {
                                     route_name: values.route_name,
+                                    zone: values.zone,
                                     price: Number(values.price),
                                     start_latitude: s?.lat ? Number(s.lat.toFixed(6)) : 0,
                                     start_longitude: s?.lng ? Number(s.lng.toFixed(6)) : 0,

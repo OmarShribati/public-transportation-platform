@@ -84,9 +84,8 @@ export const Vehicles = () => {
             queryKey="vehicles"
             renderOptions={(row: VehiclesType) => (
                 <Options
-                    type={['editModal', 'delete' ,'details']}
+                    type={['editModal' ,'details']}
                     id={row.vehicle_id}
-                    query={VehiclesAPI.delete}
                     queryKey="vehicles"
                     editModalContent={ <AssignToRoute v_id={row.vehicle_id} />}
                     detailsRoute={`/vehicles/${row.vehicle_id}`}
@@ -94,8 +93,6 @@ export const Vehicles = () => {
             )}
             dataKey="vehicles"
             tableTitle="Fleet Management"
-            addButtonLabel="Register Vehicle"
-            link="/vehicles/add"
             queryFn={() => VehiclesAPI.list()}
             columns={getColumns()}
         />

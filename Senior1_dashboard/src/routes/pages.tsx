@@ -1,11 +1,14 @@
 import {
   Bell,
   LayoutDashboard,
+  Users,
   MapPin,
-  MessageSquareWarning,
   Route,
   Truck,
-  Users
+  Layers,
+  Store,
+  Receipt,
+  MessageSquareWarning,
 } from "lucide-react";
 
 export const allPages = [
@@ -18,6 +21,11 @@ export const allPages = [
     name: "Users",
     path: "/users",
     icon: Users
+  },
+  {
+    name: "Zone",
+    path: "/zone",
+    icon: Layers
   },
   {
     name: "Stops",
@@ -35,6 +43,16 @@ export const allPages = [
     icon: Truck
   },
   {
+    name: "Merchants",
+    path: "/merchants",
+    icon: Store
+  },
+  {
+    name: "Transactions",
+    path: "/transactions",
+    icon: Receipt
+  },
+  {
     name: "Complaints",
     path: "/complaints",
     icon: MessageSquareWarning
@@ -44,5 +62,4 @@ export const allPages = [
     path: "/send/notification",
     icon: Bell
   },
-
 ];

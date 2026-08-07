@@ -12,7 +12,15 @@ export class BaseService {
     });
   }
 
-
+ patchWithId(id: number | string, subPath: string, data: any, formData = false) {
+  return APIService.request({
+    endpoint: `${this.endpoint}/${id}${subPath}`, 
+    method: "PATCH",
+    data,
+    formData,
+    feature: this.feature,
+  });
+}
   postCustomPath(subPath: string, data: any) {
     return APIService.request({
       endpoint: `${this.endpoint}${subPath}`,

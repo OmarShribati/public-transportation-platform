@@ -5,6 +5,7 @@ import CryptoJS from "crypto-js";
 import { AuthAPI } from "./api";
 import { LoginVal } from "./validation";
 import Logo from "@/assets/l.png"
+import { PaymentCard } from "@/components/shared/PaymentCard";
 
 export const Login = () => {
   const navigate = useNavigate();

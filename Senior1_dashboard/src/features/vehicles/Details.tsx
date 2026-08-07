@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { VehiclesAPI } from "./api";
+import toast from 'react-hot-toast';
 import {
-  Car, User, Activity, Calendar, MapPin, Navigation, Gauge, Route, AlertTriangle, Clock
+  Car, User, Activity, MapPin, Navigation, Gauge, Route, AlertTriangle, Clock, Cpu, CheckCircle2
 } from 'lucide-react';
 import GoogleMapDrawing from '@/components/shared/Map';
 
@@ -24,13 +25,27 @@ const Badge = ({ children, variant = "default" }: any) => {
 
 export const Details = () => {
   const { id } = useParams({ strict: false });
-  const queryClient = useQueryClient();
+  const queryClient:any = useQueryClient();
   const [socketData, setSocketData] = useState<any>(null);
+
+  const [deviceCode, setDeviceCode] = useState("");
+  const [isSubmittingDevice, setIsSubmittingDevice] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['vehicle', id],
     queryFn: () => VehiclesAPI.details(id),
   });
+
+  const vehicle = data?.vehicle;
+
+  const existingDeviceCode = vehicle?.device_code || vehicle?.device?.device_code || vehicle?.scanner_device?.device_code;
+  const hasDevice = Boolean(existingDeviceCode);
+
+  useEffect(() => {
+    if (existingDeviceCode) {
+      setDeviceCode(existingDeviceCode);
+    }
+  }, [existingDeviceCode]);
 
   useEffect(() => {
     if (!id) return;
@@ -51,7 +66,7 @@ export const Details = () => {
           ...oldData,
           vehicle: {
             ...oldData.vehicle,
-            latest_location: payload
+            latest_location: payload?.location
           }
         };
       });
@@ -63,19 +78,45 @@ export const Details = () => {
     return () => socket.close();
   }, [id, queryClient]);
 
-  if (isLoading) return <div className="p-10 text-center animate-pulse text-blue-500">Connecting to Fleet...</div>;
-  if (!data?.vehicle) return <div className="p-10 text-center text-red-500">Vehicle Not Found.</div>;
+  const handleCreateDevice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!deviceCode.trim()) {
+      toast.error('الرجاء إدخال كود الجهاز');
+      return;
+    }
 
-  const vehicle = data.vehicle;
+    try {
+      setIsSubmittingDevice(true);
+      
+      await VehiclesAPI.createDevice({
+        device_code: deviceCode,
+        vehicle_id: Number(id)
+      });
+
+      toast.success('تم ربط الجهاز بنجاح');
+      queryClient.invalidateQueries(['vehicle', id]);
+      
+    } catch (error: any) {
+      console.error("Device Creation Error:", error);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'حدث خطأ أثناء إضافة الجهاز';
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmittingDevice(false);
+    }
+  };
+
+  if (isLoading) return <div className="p-10 text-center text-blue-500 animate-pulse">Connecting to Fleet...</div>;
+  if (!vehicle) return <div className="p-10 text-center text-red-500">Vehicle Not Found.</div>;
+
   const liveLocation = socketData || vehicle.latest_location;
   const activeTrip = vehicle.active_trip;
 
   return (
     <div className="min-h-screen bg-[#08090a] p-6 lg:p-12 text-white">
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+      <div className="flex flex-col items-start justify-between gap-6 mb-10 md:flex-row md:items-center">
         <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-blue-600/20 rounded-3xl flex items-center justify-center border border-blue-500/30">
+          <div className="flex items-center justify-center w-20 h-20 border bg-blue-600/20 rounded-3xl border-blue-500/30">
             <Car size={40} className="text-blue-500" />
           </div>
           <div>
@@ -93,9 +134,9 @@ export const Details = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 
-        <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-8 lg:col-span-2">
           <div className="bg-[#111214] border border-white/5 rounded-[3rem] overflow-hidden h-[500px] shadow-2xl relative">
             <GoogleMapDrawing
               height="100%"
@@ -103,14 +144,13 @@ export const Details = () => {
             />
             <div className="absolute bottom-6 left-6 bg-[#08090a]/80 backdrop-blur-md p-4 rounded-2xl border border-white/10">
               <p className="text-[10px] text-gray-500 font-black uppercase mb-1">Current Coordinates</p>
-              <p className="text-xs font-mono text-emerald-500">
+              <p className="font-mono text-xs text-emerald-500">
                 {liveLocation?.latitude?.toFixed(6)}, {liveLocation?.longitude?.toFixed(6)}
               </p>
             </div>
           </div>
 
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <MetricCard icon={<Gauge size={20} />} label="Speed" value={`${liveLocation?.speed_kmh || 0} km/h`} />
             <MetricCard icon={<Navigation size={20} />} label="Heading" value={`${liveLocation?.heading || 0}°`} />
             <MetricCard icon={<Route size={20} />} label="Off Route" value={`${liveLocation?.distance_to_route_meters?.toFixed(0) || 0} m`} />
@@ -118,11 +158,10 @@ export const Details = () => {
           </div>
         </div>
 
-
         <div className="space-y-8">
 
           <div className="bg-[#111214] border border-white/5 p-8 rounded-[3rem]">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+            <h3 className="flex items-center gap-2 mb-6 text-xl font-bold">
               <User className="text-blue-500" size={20} /> Driver Information
             </h3>
             <div className="space-y-4">
@@ -132,9 +171,8 @@ export const Details = () => {
             </div>
           </div>
 
-
           <div className="bg-[#111214] border border-white/5 p-8 rounded-[3rem]">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+            <h3 className="flex items-center gap-2 mb-6 text-xl font-bold">
               <MapPin className="text-purple-500" size={20} /> Trip Assets
             </h3>
             <div className="space-y-4">
@@ -143,6 +181,47 @@ export const Details = () => {
               <InfoRow label="Last Update" value={new Date(liveLocation?.recorded_at || Date.now()).toLocaleTimeString()} />
             </div>
           </div>
+
+          {/* قسم الجهاز (عرض فقط إذا كان موجوداً، أو إدخال إذا لم يكن موجوداً) */}
+          <div className="bg-[#111214] border border-white/5 p-8 rounded-[3rem]">
+            <h3 className="flex items-center gap-2 mb-6 text-xl font-bold">
+              <Cpu className={hasDevice ? "text-emerald-500" : "text-blue-500"} size={20} /> 
+              {hasDevice ? "Linked Device" : "Link Device"}
+            </h3>
+            
+            <form onSubmit={handleCreateDevice} className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-[10px] text-gray-500 font-bold uppercase block">Device Code</label>
+                  {hasDevice && (
+                    <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1">
+                      <CheckCircle2 size={12} /> Connected
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={deviceCode}
+                  onChange={(e) => setDeviceCode(e.target.value)}
+                  placeholder="e.g. BUS-SCANNER-001"
+                  disabled={hasDevice || isSubmittingDevice}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              {/* إخفاء زر الإنشاء بالكامل في حال كان الجهاز مربوطاً */}
+              {!hasDevice && (
+                <button
+                  type="submit"
+                  disabled={isSubmittingDevice}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors text-sm flex justify-center items-center gap-2"
+                >
+                  {isSubmittingDevice ? 'Linking...' : 'Link Device'}
+                </button>
+              )}
+            </form>
+          </div>
+
         </div>
       </div>
     </div>
@@ -151,14 +230,14 @@ export const Details = () => {
 
 const MetricCard = ({ icon, label, value }: any) => (
   <div className="bg-[#111214] border border-white/5 p-5 rounded-3xl text-center">
-    <div className="text-gray-500 mb-2 flex justify-center">{icon}</div>
+    <div className="flex justify-center mb-2 text-gray-500">{icon}</div>
     <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">{label}</p>
     <p className="text-lg font-black text-white">{value}</p>
   </div>
 );
 
 const InfoRow = ({ label, value, className = "" }: any) => (
-  <div className="border-b border-white/5 pb-3 last:border-0">
+  <div className="pb-3 border-b border-white/5 last:border-0">
     <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">{label}</p>
     <p className={`text-sm font-bold ${className}`}>{value || "---"}</p>
   </div>

@@ -10,6 +10,7 @@ import { Edit } from "./passengers/Edit";
 import { DriverAPI } from "./drivers/api";
 import { useRouter } from "@tanstack/react-router";
 import { Clock } from "lucide-react";
+import { PaymentCard } from "@/components/shared/PaymentCard";
 
 export const Users = () => {
     const [activeTab, setActiveTab] = useState<"passengers" | "drivers">("passengers");
@@ -106,6 +107,7 @@ export const Users = () => {
     const columns = useMemo(() => getColumns(), [activeTab]);
 
     return (
+       <>
         <div className="p-8 min-h-screen ">
             <div className="max-w-7xl mx-auto space-y-8">
 
@@ -161,12 +163,13 @@ export const Users = () => {
                             return activeTab === "passengers" ? res.passengers : res.drivers;
                         }}
                         renderOptions={(row: any) => (
+                           
                             <Options
-                                type={['editModal' , `${activeTab === "drivers" ? 'details' : ''}`]}
+                                type={['editModal' , 'details']}
                                 id={row.id}
                                 queryKey={activeTab === "passengers" ? "PassengerList" : "DriverList"}
                                 editModalContent={<Edit row={row} />}
-                                detailsRoute={`/drivers/${row.id}`}
+                                detailsRoute={activeTab === "drivers" ? `/drivers/${row.id}` : `/passengers/${row.id}`}
                                 searchParams={{
                                     row
                                 }}
@@ -178,5 +181,6 @@ export const Users = () => {
                 </div>
             </div>
         </div>
+       </>
     );
 };

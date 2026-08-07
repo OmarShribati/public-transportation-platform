@@ -20,8 +20,10 @@ export default function UserHome() {
 
       let currentLocation = await Location.getCurrentPositionAsync({});
       const coords = {
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
+        // latitude: currentLocation.coords.latitude,
+        latitude: 33.50423760088481 ,
+        // longitude: currentLocation.coords.longitude,
+        longitude:36.288756300739614,
         latitudeDelta: 0.005,
         longitudeDelta: 0.005,
       };
@@ -76,13 +78,13 @@ export default function UserHome() {
           <View className="w-full mt-4 border-b border-gray-50" />
         </View>
 
-        <View className="flex-row items-start mb-10 px-2">
+        <View className="flex-row items-start px-2 mb-10">
           <View className="bg-[#10b981]/10 p-2.5 rounded-2xl mr-4">
             <Ionicons name="navigate-circle" size={24} color="#10b981" />
           </View>
           <View className="flex-1">
-            <Text className="text-gray-800 font-bold text-lg leading-6">Set your destination</Text>
-            <Text className="text-gray-400 text-sm font-medium mt-1">
+            <Text className="text-lg font-bold leading-6 text-gray-800">Set your destination</Text>
+            <Text className="mt-1 text-sm font-medium text-gray-400">
               Ensure your location is precise for a faster connection with nearby drivers.
             </Text>
           </View>
@@ -93,10 +95,10 @@ export default function UserHome() {
           onPress={() => router.push("/makeOrder")}
           className="bg-[#10b981] h-20 rounded-[28px] flex-row items-center justify-between px-8 shadow-2xl shadow-blue-400"
         >
-          <Text className="text-xl font-black text-white tracking-widest uppercase">
+          <Text className="text-xl font-black tracking-widest text-white uppercase">
             Confirm Pickup
           </Text>
-          <View className="bg-white/10 w-12 h-12 rounded-2xl items-center justify-center">
+          <View className="items-center justify-center w-12 h-12 bg-white/10 rounded-2xl">
             <Ionicons name="chevron-forward" size={22} color="white" />
           </View>
         </TouchableOpacity>
